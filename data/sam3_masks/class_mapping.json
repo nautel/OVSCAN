@@ -1,0 +1,50 @@
+{
+  "nuscenes_to_sam3": {
+    "car": {"prompt": "car", "class_id": 0},
+    "truck": {"prompt": "truck", "class_id": 1},
+    "bus": {"prompt": "bus", "class_id": 2},
+    "trailer": {"prompt": "trailer", "class_id": 3},
+    "construction_vehicle": {"prompt": "construction vehicle", "class_id": 4},
+    "pedestrian": {"prompt": "person", "class_id": 5},
+    "motorcycle": {"prompt": "motorcycle", "class_id": 6},
+    "bicycle": {"prompt": "bicycle", "class_id": 7},
+    "traffic_cone": {"prompt": "traffic cone", "class_id": 8},
+    "barrier": {"prompt": "barrier", "class_id": 9}
+  },
+  "sam3_prompt_to_nuscenes": {
+    "car": "car",
+    "truck": "truck",
+    "bus": "bus",
+    "trailer": "trailer",
+    "construction vehicle": "construction_vehicle",
+    "person": "pedestrian",
+    "motorcycle": "motorcycle",
+    "bicycle": "bicycle",
+    "traffic cone": "traffic_cone",
+    "barrier": "barrier"
+  },
+  "class_id_to_name": {
+    "0": "car",
+    "1": "truck",
+    "2": "bus",
+    "3": "trailer",
+    "4": "construction_vehicle",
+    "5": "pedestrian",
+    "6": "motorcycle",
+    "7": "bicycle",
+    "8": "traffic_cone",
+    "9": "barrier"
+  },
+  "prompts_ordered": [
+    "car",
+    "truck",
+    "bus",
+    "trailer",
+    "construction vehicle",
+    "person",
+    "motorcycle",
+    "bicycle",
+    "traffic cone",
+    "barrier"
+  ]
+}

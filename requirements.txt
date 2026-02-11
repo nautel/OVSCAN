@@ -1,0 +1,20 @@
+# Core dependencies
+numpy>=1.20.0
+scipy>=1.7.0
+scikit-learn>=0.24.0
+tqdm>=4.60.0
+
+# Optional: faster point-in-box operations
+# numba>=0.55.0
+
+# Optional: accurate rotated BEV IoU (falls back to axis-aligned if missing)
+# shapely>=1.8.0
+
+# Optional: quaternion conversion (falls back to manual z-axis rotation)
+# pyquaternion>=0.9.9
+
+# Required for NuScenes evaluation only
+# nuscenes-devkit>=1.1.9
+
+# Required for loading camera images (only for visualization)
+# Pillow>=8.0.0
