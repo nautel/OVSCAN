@@ -44,18 +44,27 @@ def get_paths(
     """
     project_root = get_project_root()
 
-    dr = Path(data_root or os.environ.get(
-        'NUSCENES_ROOT', str(project_root / 'data' / 'nuscenes')
-    ))
+    if data_root:
+        dr = Path(data_root)
+    elif os.environ.get('NUSCENES_ROOT'):
+        dr = Path(os.environ['NUSCENES_ROOT'])
+    else:
+        # Auto-detect: check common locations
+        pkg_data = Path(__file__).parent / 'data' / 'nuscenes'
+        root_data = project_root / 'data' / 'nuscenes'
+        dr = pkg_data if pkg_data.exists() else root_data
     if sam3_root:
         sr = Path(sam3_root)
     elif os.environ.get('SAM3_MASK_ROOT'):
         sr = Path(os.environ['SAM3_MASK_ROOT'])
     else:
-        # Auto-detect: prefer included compressed data, fallback to raw
-        compressed = Path(__file__).parent / 'data' / 'sam3_masks'
-        raw = project_root / 'GEN_MASK_NUSCENCES_SAM'
-        sr = compressed if compressed.exists() else raw
+        # Auto-detect: check common locations
+        candidates = [
+            project_root / 'data' / 'sam3_masks',       # repo root/data/
+            Path(__file__).parent / 'data' / 'sam3_masks',  # Implement_OVSCAN/data/
+            project_root / 'GEN_MASK_NUSCENCES_SAM',     # raw masks
+        ]
+        sr = next((c for c in candidates if c.exists()), candidates[0])
     od = Path(output_dir or os.environ.get(
         'OVSCAN_OUTPUT', str(project_root / 'Implement_OVSCAN' / 'output')
     ))

@@ -1,182 +1,97 @@
-# OVSCAN: Open-Vocabulary 3D Object Detection
+# OV-SCAN: Open-Vocabulary 3D Object Detection
 
-3D bounding box optimization for autonomous driving using LiDAR-camera fusion with open-vocabulary 2D detection.
+Implementation of the SC-NOD 3D bounding box optimization from [OV-SCAN (ICCV 2025)](https://arxiv.org/abs/2503.06435).
 
-## Pipeline Overview
+> **OV-SCAN: Semantically Consistent Alignment for Novel Object Discovery in Open-Vocabulary 3D Object Detection**
+> Adrian Chow et al. | [Paper](https://arxiv.org/abs/2503.06435) | [PDF](https://openaccess.thecvf.com/content/ICCV2025/papers/Chow_OV-SCAN_Semantically_Consistent_Alignment_for_Novel_Object_Discovery_in_Open-Vocabulary_ICCV_2025_paper.pdf)
 
 ```
-Pre-generated SAM3 Masks + NuScenes LiDAR
-    |
-    v
-Point-in-Mask Extraction (per camera)
-    |
-    v
-DBSCAN Depth Clustering (noise removal)
-    |
-    v
-3D BBox Optimization (PSO or Geometric)
-    |
-    v
-3D NMS (multi-camera fusion)
-    |
-    v
-NuScenes Submission JSON
+SAM3 Masks + NuScenes LiDAR → Point-in-Mask → DBSCAN → 3D BBox Optimization (PSO/Geometric) → 3D NMS → Submission JSON
 ```
 
-## Installation
+## Results (NuScenes v1.0-mini)
+
+| Optimizer | mAP | NDS | car | ped | cone | mATE | Speed |
+|-----------|-----|-----|-----|-----|------|------|-------|
+| **SC-NOD PSO** | **24.40%** | **24.70%** | 28.1% | 45.4% | 46.4% | 0.561 | ~27s/sample |
+| UltraFast | 17.00% | 21.10% | 26.8% | 24.5% | 12.7% | 0.713 | ~4s/sample |
+
+Pre-computed submission included in `results/submissions/`.
+
+## Setup
 
 ```bash
-pip install numpy scipy scikit-learn tqdm
+# 1. Clone
+git clone https://github.com/nautel/OVSCAN.git && cd OVSCAN
 
-# Recommended (significantly improves accuracy and speed)
-pip install numba shapely pyquaternion
+# 2. Install dependencies
+pip install numpy scipy scikit-learn tqdm numba shapely pyquaternion
 
-# For NuScenes evaluation
+# 3. Download NuScenes v1.0-mini (LiDAR only)
+#    From: https://www.nuscenes.org/nuscenes
+#    Extract so that data/nuscenes/samples/LIDAR_TOP/*.bin exists
+#    Info PKL files and SAM3 masks are already included in this repo.
+
+# 4. (Optional) For evaluation
 pip install nuscenes-devkit
 ```
 
-**Python**: >= 3.7 (tested with 3.8)
-
-## Data Setup
-
-### 1. NuScenes Dataset
-
-Download [NuScenes v1.0-mini](https://www.nuscenes.org/nuscenes) and generate mmdetection3d info files:
-
-```
-data/nuscenes/
-├── nuscenes_infos_train.pkl    # mmdetection3d format
-├── nuscenes_infos_val.pkl
-└── samples/
-    └── LIDAR_TOP/
-        └── *.pcd.bin
-```
-
-### 2. SAM3 Masks (included as compressed data)
-
-Pre-generated SAM3 masks are included in `data/sam3_masks/` as compressed `.npz` files (~15MB total, 323 train + 1 val samples).
-
-The data loader automatically supports both `.npy` (raw) and `.npz` (compressed) formats.
-
-If you need to generate masks from scratch or decompress to raw `.npy`:
-
-```bash
-# Decompress .npz -> .npy (optional, not needed for running)
-python -m Implement_OVSCAN.scripts.compress_masks \
-    --decompress \
-    --src_root Implement_OVSCAN/data/sam3_masks \
-    --dst_root GEN_MASK_NUSCENCES_SAM
-
-# Compress raw masks (if you generated new ones)
-python -m Implement_OVSCAN.scripts.compress_masks \
-    --src_root GEN_MASK_NUSCENCES_SAM \
-    --dst_root Implement_OVSCAN/data/sam3_masks
-```
-
-### 3. Pre-computed Results (included)
-
-Best submission and evaluation results are in `results/`:
-
-```
-results/
-├── submissions/
-│   └── scnod_pso_mAP24.40_NDS24.70.json   # Best submission (4.2MB)
-└── evaluation/
-    ├── BENCHMARK_SUMMARY.md                 # Ranked table of 99 submissions
-    ├── all_results.json                     # Machine-readable results
-    └── comparison_table.csv                 # CSV for analysis
-```
-
-To re-evaluate the included submission:
-
-```bash
-python -m Implement_OVSCAN.evaluate \
-    --result_path Implement_OVSCAN/results/submissions/scnod_pso_mAP24.40_NDS24.70.json \
-    --version v1.0-mini --eval_set mini_train --verbose
-```
+**What's included in this repo (no extra downloads needed besides NuScenes raw data):**
+- `data/nuscenes/*.pkl` — mmdetection3d info files (train + val)
+- `data/sam3_masks/` — Compressed SAM3 masks for all 323 train + 1 val samples (26MB, 500x compressed)
 
 ## Quick Start
 
 ```bash
-# SC-NOD PSO optimizer (best accuracy, ~27s/sample)
+# SC-NOD PSO optimizer (best accuracy)
 python -m Implement_OVSCAN --split train --optimizer pso --verbose
 
-# UltraFast geometric optimizer (~4s/sample)
+# UltraFast geometric optimizer (fast)
 python -m Implement_OVSCAN --split train --optimizer fast
 
 # Process subset
 python -m Implement_OVSCAN --split train --start_idx 0 --end_idx 10 --verbose
 
-# Custom data paths
-python -m Implement_OVSCAN --split train \
-    --data_root /path/to/nuscenes \
-    --sam3_root /path/to/sam3_masks \
-    --output_dir /path/to/output
-
-# Evaluate results
+# Evaluate
 python -m Implement_OVSCAN.evaluate \
-    --result_path output/submission_pso_*.json \
-    --version v1.0-mini --eval_set mini_train
+    --result_path results/submissions/scnod_pso_mAP24.40_NDS24.70.json \
+    --version v1.0-mini --eval_set mini_train --verbose
 ```
 
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NUSCENES_ROOT` | NuScenes data directory | `<project>/data/nuscenes` |
-| `SAM3_MASK_ROOT` | SAM3 pre-generated masks | auto-detect `data/sam3_masks/` or `GEN_MASK_NUSCENCES_SAM/` |
-| `OVSCAN_OUTPUT` | Output directory | `<project>/Implement_OVSCAN/output` |
-
-## Optimizers
-
-### SC-NOD PSO (default)
-Particle Swarm Optimization following SC-NOD paper formulation:
-- Cost: J = lambda1 * J_density + lambda2 * J_lshape + lambda3 * J_surface + gamma * J_2d
-- Cosine annealing inertia, 50 particles, 500 iterations
-- Multi-anchor: tries min/mean/max sizes per class
-- Best mAP: **24.40%**, NDS: **24.70%**
-
-### UltraFast Geometric
-Geometric optimization with ConvexHull + grid search:
-- ConvexHull yaw -> L-shape center correction -> grid search
-- <100ms per object, class-specific strategies
-- Good for rapid prototyping and large-scale processing
-
-## Benchmark Results (NuScenes v1.0-mini, mini_train)
-
-| Optimizer | mAP | NDS | car AP | ped AP | cone AP | mATE | Time/sample |
-|-----------|-----|-----|--------|--------|---------|------|-------------|
-| SC-NOD PSO | **24.40%** | **24.70%** | **28.1%** | 45.4% | 46.4% | **0.5614** | ~27s |
-| UltraFast | 17.00% | 21.10% | 26.8% | 24.5% | 12.7% | 0.7133 | ~4s |
+Custom paths: `--data_root /path/to/nuscenes --sam3_root /path/to/masks --output_dir /path/to/output`
 
 ## Package Structure
 
 ```
-Implement_OVSCAN/
-├── __init__.py          # Package exports
-├── __main__.py          # Entry point for python -m Implement_OVSCAN
-├── config.py            # All configuration (paths, anchors, thresholds)
-├── data_loader.py       # NuScenes + SAM3 mask loading (.npy and .npz)
-├── mask_processor.py    # Object extraction from masks + DBSCAN
-├── point_clustering.py  # DBSCAN depth clustering
-├── cost_functions.py    # SC-NOD cost functions (J_density, J_lshape, J_surface, J_2d)
-├── pso_optimizer.py     # AdaptivePSOOptimizer (SC-NOD paper)
-├── fast_optimizer.py    # UltraFastOptimizer (geometric fallback)
-├── nms_3d.py            # 3D NMS (Shapely BEV IoU)
-├── output_formatter.py  # NuScenes submission JSON formatting
-├── run.py               # Main CLI entry point
-├── evaluate.py          # NuScenes evaluation wrapper
-├── scripts/
-│   └── compress_masks.py  # Compress/decompress SAM3 masks
+├── Implement_OVSCAN/
+│   ├── config.py            # Paths, anchors, thresholds, PSO hyperparameters
+│   ├── cost_functions.py    # SC-NOD cost: J_density, J_lshape, J_surface, J_2d
+│   ├── pso_optimizer.py     # AdaptivePSOOptimizer (cosine annealing, multi-anchor)
+│   ├── fast_optimizer.py    # UltraFastOptimizer (ConvexHull + grid search)
+│   ├── data_loader.py       # NuScenes + SAM3 mask loading (.npy/.npz)
+│   ├── mask_processor.py    # LiDAR-to-camera projection + object extraction
+│   ├── point_clustering.py  # DBSCAN depth clustering
+│   ├── nms_3d.py            # 3D NMS (Shapely BEV IoU)
+│   ├── output_formatter.py  # NuScenes submission JSON
+│   ├── run.py               # CLI entry point
+│   └── evaluate.py          # NuScenes evaluation wrapper
 ├── data/
-│   └── sam3_masks/        # Compressed SAM3 masks (~15MB)
-├── results/
-│   ├── submissions/       # Best submission JSON
-│   └── evaluation/        # Benchmark summaries
-├── requirements.txt     # Dependencies
-└── README.md            # This file
+│   ├── nuscenes/            # Info PKLs (included) + LiDAR bins (download)
+│   └── sam3_masks/          # Compressed masks (included, 26MB)
+└── results/                 # Pre-computed submission + benchmark
+```
+
+## Citation
+
+```bibtex
+@inproceedings{chow2025ovscan,
+    title={OV-SCAN: Semantically Consistent Alignment for Novel Object Discovery in Open-Vocabulary 3D Object Detection},
+    author={Chow, Adrian},
+    booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    year={2025}
+}
 ```
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+[MIT License](LICENSE)
