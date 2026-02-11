@@ -91,3 +91,5 @@ Custom paths: `--data_root /path/to/nuscenes --sam3_root /path/to/masks --output
 ## License
 
 [MIT License](LICENSE)
+
+**Disclaimer**: This is a non-official implementation. For the official version, see [ahtchow/OV-SCAN](https://github.com/ahtchow/OV-SCAN).
