@@ -9,12 +9,12 @@ Non-official implementation of the SC-NOD 3D bounding box optimization from [OV-
 SAM3 Masks + NuScenes LiDAR → Point-in-Mask → DBSCAN → 3D BBox Optimization → 3D NMS → Submission JSON
 ```
 
-## Results (NuScenes v1.0-mini)
+## Results (NuScenes v1.0-mini, mini_train)
 
-| Optimizer | mAP | NDS | car | ped | cone | mATE | Speed |
-|-----------|-----|-----|-----|-----|------|------|-------|
-| **SC-NOD PSO** | **24.40%** | **24.70%** | 28.1% | 45.4% | 46.4% | 0.561 | ~27s/sample |
-| UltraFast | 17.00% | 21.10% | 26.8% | 24.5% | 12.7% | 0.713 | ~4s/sample |
+| Method | mAP | NDS | car | ped | cone | Speed |
+|--------|-----|-----|-----|-----|------|-------|
+| **[OV-SCAN SC-NOD](https://github.com/nautel/OVSCAN)** | **24.40%** | **24.70%** | **28.1%** | **45.4%** | 46.4% | ~27s/sample |
+| **[OpenSight](https://github.com/nautel/OpenSight)** | 21.53% | 23.47% | 21.9% | 41.0% | **55.5%** | ~1.3s/sample |
 
 Pre-computed submission included in `results/submissions/`.
 
