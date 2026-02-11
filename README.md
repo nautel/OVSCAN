@@ -36,10 +36,6 @@ pip install numpy scipy scikit-learn tqdm numba shapely pyquaternion
 pip install nuscenes-devkit
 ```
 
-**What's included in this repo (no extra downloads needed besides NuScenes raw data):**
-- `data/nuscenes/*.pkl` — mmdetection3d info files (train + val)
-- `data/sam3_masks/` — Compressed SAM3 masks for all 323 train + 1 val samples (26MB, 500x compressed)
-
 ## Quick Start
 
 ```bash
