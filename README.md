@@ -6,7 +6,7 @@ Implementation of the SC-NOD 3D bounding box optimization from [OV-SCAN (ICCV 20
 > Adrian Chow et al. | [Paper](https://arxiv.org/abs/2503.06435) | [PDF](https://openaccess.thecvf.com/content/ICCV2025/papers/Chow_OV-SCAN_Semantically_Consistent_Alignment_for_Novel_Object_Discovery_in_Open-Vocabulary_ICCV_2025_paper.pdf)
 
 ```
-SAM3 Masks + NuScenes LiDAR → Point-in-Mask → DBSCAN → 3D BBox Optimization (PSO/Geometric) → 3D NMS → Submission JSON
+SAM3 Masks + NuScenes LiDAR → Point-in-Mask → DBSCAN → 3D BBox Optimization → 3D NMS → Submission JSON
 ```
 
 ## Results (NuScenes v1.0-mini)
