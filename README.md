@@ -10,7 +10,7 @@ SAM3 Masks + NuScenes LiDAR → Point-in-Mask → DBSCAN → 3D BBox Optimizatio
 ```
 ## Results 
 
-### BBOX seeker only (our implementation)
+### Our implementation: BBOX seeker only
 Dataset: Nuscenes v1.0-mini
 
 | Method | mAP | NDS | car | ped | cone | Speed |
@@ -21,7 +21,7 @@ Dataset: Nuscenes v1.0-mini
 
 Pre-computed submission files (.json) are included in `results/submissions/`.
 
-### BBOX seeker + Train (paper results)
+### Paper results: BBOX seeker + Train
 Dataset: Nuscenes v1.0-trainval
 
 | Method | mAP | NDS | 
